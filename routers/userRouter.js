@@ -75,8 +75,6 @@ router.put("/:id", async (req, res) => {
 const mongoose = require('mongoose');
 const { isValidObjectId } = mongoose;
 
-// ...
-
 router.delete("/:id", async (req, res) => {
     try {
         const userId = req.params.id;
