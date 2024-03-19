@@ -1,7 +1,10 @@
+// userRouter.js
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel.js');
+
+router.use(express.json());
 
 // Middleware to check if the request has a valid JWT
 const authenticateJWT = (req, res, next) => {
@@ -12,7 +15,7 @@ const authenticateJWT = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, 'your_secret_key'); // replace 'your_secret_key' with your actual secret key
+        const decoded = jwt.verify(token, 'your_secret_key');
         req.user = decoded;
         next();
     } catch (error) {
@@ -20,7 +23,27 @@ const authenticateJWT = (req, res, next) => {
     }
 };
 
-// Apply the middleware to the entire userRouter
+// Login route
+router.post("/login", async (req, res) => {
+    try {
+        const { userName, password } = req.body;
+
+        const user = await userModel.findOne({ userName });
+
+        if (!user || user.password !== password) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign({ userId: user._id, userName: user.userName }, 'your_secret_key', { expiresIn: '1h' });
+
+        res.json({ token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Apply the authentication middleware to the entire userRouter
 router.use(authenticateJWT);
 
 // Your existing routes with authentication middleware applied
@@ -34,28 +57,6 @@ router.get("/", (req, res) => {
         (error) => {
             console.log(error);
             res.status(500).send("Internal Server Error");
-        }
-    );
-});
-
-router.post("/", function (req, res) {
-    const newUser = req.body;
-
-    // Check if newUser is undefined or does not have userName property
-    if (!newUser || !newUser.userName) {
-        return res.status(400).json({ error: "Invalid request body. 'userName' is required." });
-    }
-
-    console.log(newUser.userName);
-
-    userModel.create(newUser).then(
-        function (docs) {
-            res.status(201).json(docs); // 201 indicates resource creation
-        }
-    ).catch(
-        (error) => {
-            console.log(error);
-            res.status(500).json({ error: "Internal Server Error" });
         }
     );
 });
