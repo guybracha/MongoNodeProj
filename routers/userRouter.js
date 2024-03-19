@@ -23,7 +23,24 @@ const authenticateJWT = (req, res, next) => {
     }
 };
 
-// Login route
+// Apply the authentication middleware to specific routes
+router.use("/login", authenticateJWT); // Apply to login route only
+
+// Your existing routes with authentication middleware applied
+router.get("/", (req, res) => {
+    userModel.find().then(
+        function (docs) {
+            res.send(docs);
+            console.log("user route");
+        }
+    ).catch(
+        (error) => {
+            console.log(error);
+            res.status(500).send("Internal Server Error");
+        }
+    );
+});
+
 router.post("/login", async (req, res) => {
     try {
         const { userName, password } = req.body;
@@ -43,22 +60,26 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Apply the authentication middleware to the entire userRouter
-router.use(authenticateJWT);
+// New route for user registration (without authentication)
+router.post("/register", async (req, res) => {
+    try {
+        const { userName, password, email } = req.body;
 
-// Your existing routes with authentication middleware applied
-router.get("/", (req, res) => {
-    userModel.find().then(
-        function (docs) {
-            res.send(docs);
-            console.log("user route");
+        // Check if the user already exists
+        const existingUser = await userModel.findOne({ userName });
+        if (existingUser) {
+            return res.status(400).json({ error: 'User already exists' });
         }
-    ).catch(
-        (error) => {
-            console.log(error);
-            res.status(500).send("Internal Server Error");
-        }
-    );
+
+        // Create a new user
+        const newUser = new userModel({ userName, password, email });
+        const savedUser = await newUser.save();
+
+        res.status(201).json(savedUser);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 router.put("/:id", async (req, res) => {
