@@ -4,11 +4,12 @@ const taskModel = require('../models/taskModel.js');
 
 router.use(express.json());
 
-router.get("/", (req, res) => {
-    taskModel.find().then(
+router.get("/user/:userId", (req, res) => {
+    const userId = req.params.userId;
+    taskModel.find({ userId: userId }).then(
         function (docs) {
             res.send(docs);
-            console.log("task route");
+            console.log("tasks route for user: " + userId);
         }
     ).catch(
         (error) => {
@@ -18,9 +19,9 @@ router.get("/", (req, res) => {
     );
 });
 
-router.post("/", function (req, res) {
-    const newTask = req.body;
-    console.log(req.body.name);
+router.post("/", (req, res) => {
+    const newTask = { userId: req.body.userId, ...req.body };
+    console.log(newTask.name);
     taskModel.create(newTask).then(
         function (docs) {
             res.send(docs);
