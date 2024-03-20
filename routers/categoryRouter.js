@@ -2,11 +2,22 @@ const express = require('express');
 const router = express.Router();
 const categoryModel = require('../models/categoryModel.js');
 
+router.use(express.json());
+
 // Create a new category
 router.post("/", async (req, res) => {
     try {
-        const newCategory = req.body;
-        const createdCategory = await categoryModel.create(newCategory);
+        const { name } = req.body; // Destructure the name field from req.body
+        if (!name) {
+            return res.status(400).json({ error: 'Name is required' }); // Check if name is provided
+        }
+
+        const existingCategory = await categoryModel.findOne({ name }); // Check if category with the same name already exists
+        if (existingCategory) {
+            return res.status(400).json({ error: 'Category with this name already exists' });
+        }
+
+        const createdCategory = await categoryModel.create({ name }); // Create the new category
         res.status(201).json(createdCategory);
     } catch (error) {
         console.error(error);

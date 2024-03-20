@@ -16,9 +16,10 @@ const taskSchema = new mongoose.Schema({
         enum: ['Todo', 'In Progress', 'Completed'],
         default: 'Todo'
     },
-    dueDate: Date,
+    dueDate: String,
     category: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
         required: true
     }
 }, { collection: "Tasks" });

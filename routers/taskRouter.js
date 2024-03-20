@@ -4,21 +4,36 @@ const taskModel = require('../models/taskModel.js');
 
 router.use(express.json());
 
+// Get tasks by user ID
 router.get("/user/:userId", async (req, res) => {
     try {
         const userId = req.params.userId;
         const tasks = await taskModel.find({ userId: userId });
         res.send(tasks);
-        console.log("tasks route for user: " + userId);
+        console.log("Tasks route for user: " + userId);
     } catch (error) {
         console.log(error);
         res.status(500).send("Internal Server Error");
     }
 });
 
+// Get tasks by category
+router.get("/category/:category", async (req, res) => {
+    try {
+        const category = req.params.category;
+        const tasks = await taskModel.find({ category: category });
+        res.send(tasks);
+        console.log("Tasks route for category: " + category);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// Create a new task
 router.post("/", async (req, res) => {
     try {
-        const newTask = { userId: req.body.userId, ...req.body };
+        const newTask = req.body;
         const createdTask = await taskModel.create(newTask);
         res.send(createdTask);
     } catch (error) {
@@ -27,6 +42,7 @@ router.post("/", async (req, res) => {
     }
 });
 
+// Update a task
 router.put("/:id", async (req, res) => {
     try {
         const taskId = req.params.id;
@@ -39,6 +55,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
+// Delete a task
 router.delete("/:id", async (req, res) => {
     try {
         const taskId = req.params.id;
