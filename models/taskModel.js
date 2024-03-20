@@ -16,7 +16,11 @@ const taskSchema = new mongoose.Schema({
         enum: ['Todo', 'In Progress', 'Completed'],
         default: 'Todo'
     },
-    dueDate: Date
+    dueDate: Date,
+    category: {
+        type: String,
+        required: true
+    }
 }, { collection: "Tasks" });
 
 module.exports = mongoose.model("Task", taskSchema);
